@@ -102,6 +102,11 @@ def on_msg(bot: Bot, accid: int, event: NewMsgEvent) -> None:
 def _help(bot: Bot, accid: int, event: NewMsgEvent) -> None:
     msg = event.msg
     bot.rpc.markseen_msgs(accid, [msg.id])
+    text = (
+        HELP
+        + "\n\nCommands:\n\n/start join the social network\n\n"
+        + "/stop log out of the social network, stop receiving updates"
+    )
     bot.rpc.send_msg(accid, msg.chat_id, MsgData(text=HELP))
 
 
