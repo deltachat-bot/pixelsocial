@@ -90,11 +90,10 @@ def on_msg(bot: Bot, accid: int, event: NewMsgEvent) -> None:
     msg = event.msg
     chatid = msg.chat_id
     chat = bot.rpc.get_basic_chat_info(accid, chatid)
-    admin_chatid = cli.get_admin_chat(bot.rpc, accid)
     if chat.chat_type != ChatType.SINGLE:
-        if chat.id != admin_chatid:
-            return
+        return
     bot.rpc.markseen_msgs(accid, [msg.id])
+    admin_chatid = cli.get_admin_chat(bot.rpc, accid)
     send_app(bot, accid, admin_chatid, chatid)
 
 
@@ -108,6 +107,19 @@ def _help(bot: Bot, accid: int, event: NewMsgEvent) -> None:
         + "/stop log out of the social network, stop receiving updates"
     )
     bot.rpc.send_msg(accid, msg.chat_id, MsgData(text=HELP))
+
+
+@cli.on(events.NewMessage(command="/start"))
+def _start(bot: Bot, accid: int, event: NewMsgEvent) -> None:
+    msg = event.msg
+    chatid = msg.chat_id
+    chat = bot.rpc.get_basic_chat_info(accid, chatid)
+    admin_chatid = cli.get_admin_chat(bot.rpc, accid)
+    if chat.chat_type != ChatType.SINGLE:
+        if chat.id != admin_chatid:
+            return
+    bot.rpc.markseen_msgs(accid, [msg.id])
+    send_app(bot, accid, admin_chatid, chatid)
 
 
 @cli.on(events.NewMessage(command="/stop"))
