@@ -18,7 +18,8 @@ classifiers = [
   "License :: OSI Approved :: GNU Affero General Public License v3",
 ]
 dependencies = [
-    "deltabot-cli>=6.2.0,<7.0",
+    "deltabot-cli>=7.0.0,<8.0",
+    "SQLAlchemy>=2.0.41,<3.0",
 ]
 
 [project.urls]

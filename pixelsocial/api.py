@@ -31,8 +31,6 @@ def process_update(
         bot.logger.info(f"ignoring too big update: {size} Bytes")
         return
 
-    bot.logger.info(f"update: {payload}")  # TODO: remove
-
     if "post" in payload:
         post = payload["post"]
         post["authorId"] = str(chatid)
