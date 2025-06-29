@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pixelsocial"
+description = "social network via Delta Chat bot"
+dynamic = ["version"]
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["deltachat", "bot"]
+authors = [
+  {name = "adbenitez", email = "adb@arcanechat.me"},
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+]
+dependencies = [
+    "deltabot-cli>=6.2.0,<7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/deltachat-bot/pixelsocial"
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "mypy",
+  "isort",
+  "pylint",
+  "pylama",
+  "pytest",
+]
+
+[project.scripts]
+pixelsocial = "pixelsocial:main"
+
+[tool.setuptools_scm]
+# can be empty if no extra settings are needed, presence enables setuptools_scm
+version_file = "pixelsocial/_version.py"
+
+[tool.setuptools]
+packages = [ "pixelsocial" ]
+zip-safe = false
+include-package-data = true
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+ignore_missing_imports = "True"
