@@ -32,6 +32,7 @@ dev = [
   "pylint",
   "pylama",
   "pytest",
+  "setuptools",
 ]
 
 [project.scripts]
