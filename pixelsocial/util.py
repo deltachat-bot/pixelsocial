@@ -61,7 +61,7 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
             }
             send_update(bot, accid, msgid, {"post": data})
 
-            for reply in post.replies[:-100]:
+            for reply in post.replies[-100:]:
                 data = {
                     "id": reply.id,
                     "postId": reply.postid,
