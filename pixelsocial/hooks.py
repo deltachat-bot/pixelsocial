@@ -106,7 +106,7 @@ def _help(bot: Bot, accid: int, event: NewMsgEvent) -> None:
         + "\n\nCommands:\n\n/start join the social network\n\n"
         + "/stop log out of the social network, stop receiving updates"
     )
-    bot.rpc.send_msg(accid, msg.chat_id, MsgData(text=HELP))
+    bot.rpc.send_msg(accid, msg.chat_id, MsgData(text=text))
 
 
 @cli.on(events.NewMessage(command="/start"))
