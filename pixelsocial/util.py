@@ -41,12 +41,7 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
     if isadmin:
         chat = bot.rpc.get_basic_chat_info(accid, admin_chatid)
         mode["selfName"] = chat.name
-    send_update(
-        bot,
-        accid,
-        msgid,
-        {"botMode": mode},
-    )
+    send_update(bot, accid, msgid, {"botMode": mode}, APP_VERSION)
 
     stmt = select(Post).order_by(Post.active).limit(100)
     with session_scope() as session:
@@ -89,10 +84,12 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
     return msgid
 
 
-def send_update(bot: Bot, accid: int, msgid: int, payload: dict) -> None:
+def send_update(bot: Bot, accid: int, msgid: int, payload: dict, summary="") -> None:
     payload["is_bot"] = True
-    update = json.dumps({"payload": payload})
-    bot.rpc.send_webxdc_status_update(accid, msgid, update, "")
+    update = {"payload": payload}
+    if summary:
+        update["summary"] = summary
+    bot.rpc.send_webxdc_status_update(accid, msgid, json.dumps(update), "")
 
 
 def decode_base64(input_string: str) -> bytes:
