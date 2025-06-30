@@ -86,25 +86,7 @@ def log_event(bot: Bot, accid: int, event: CoreEvent) -> None:
     elif event.kind == EventType.WEBXDC_STATUS_UPDATE:
         msgid = event.msg_id
         serial = event.status_update_serial
-        admin = cli.get_admin_chat(bot.rpc, accid)
-        update = json.loads(
-            bot.rpc.get_webxdc_status_updates(accid, msgid, serial - 1)
-        )[0]
-        payload = update["payload"]
-        if not payload.get("is_bot"):
-            msg = bot.rpc.get_message(accid, msgid)
-            chatid = msg.chat_id
-            if msg.from_id == SpecialContactId.SELF and not upgrade_app(
-                bot, accid, admin, chatid, msgid
-            ):
-
-                isadmin = chatid == admin
-                if not isadmin:
-                    chat = bot.rpc.get_basic_chat_info(accid, chatid)
-                    if chat.chat_type == ChatType.SINGLE:
-                        contactid = bot.rpc.get_chat_contacts(accid, chatid)[0]
-                        isadmin = cli.is_admin(bot.rpc, accid, contactid)
-                process_update(bot, accid, isadmin, admin, chatid, update)
+        on_status_update(bot, accid, msgid, serial)
     elif event.kind == EventType.SECUREJOIN_INVITER_PROGRESS:
         if event.progress == 1000:
             if not bot.rpc.get_contact(accid, event.contact_id).is_bot:
@@ -268,3 +250,23 @@ def _unsub(bot: Bot, accid: int, event: NewMsgEvent) -> None:
                 quoted_message_id=msg.id,
             )
             bot.rpc.send_msg(accid, msg.chat_id, reply)
+
+
+def on_status_update(bot: Bot, accid: int, msgid: int, serial: int) -> None:
+    admin = cli.get_admin_chat(bot.rpc, accid)
+    update = json.loads(bot.rpc.get_webxdc_status_updates(accid, msgid, serial - 1))[0]
+    payload = update["payload"]
+    if not payload.get("is_bot"):
+        msg = bot.rpc.get_message(accid, msgid)
+        chatid = msg.chat_id
+        if msg.from_id == SpecialContactId.SELF and not upgrade_app(
+            bot, accid, admin, chatid, msgid
+        ):
+
+            isadmin = chatid == admin
+            if not isadmin:
+                chat = bot.rpc.get_basic_chat_info(accid, chatid)
+                if chat.chat_type == ChatType.SINGLE:
+                    contactid = bot.rpc.get_chat_contacts(accid, chatid)[0]
+                    isadmin = cli.is_admin(bot.rpc, accid, contactid)
+            process_update(bot, accid, isadmin, admin, chatid, update)
