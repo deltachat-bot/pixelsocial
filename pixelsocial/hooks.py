@@ -24,7 +24,7 @@ from ._version import __version__
 from .api import process_update
 from .feeds import check_feeds, parse_feed
 from .orm import Feed, init, session_scope
-from .util import normalize_url, send_app, upgrade_app
+from .util import delete_old, normalize_url, send_app, upgrade_app
 
 cli = BotCli("pixelsocial")
 cli.add_generic_option("-v", "--version", action="version", version=__version__)
@@ -65,7 +65,7 @@ def on_init(bot: Bot, args: Namespace) -> None:
 
 
 @cli.on_start
-def _on_start(bot: Bot, args: Namespace) -> None:
+def on_start(bot: Bot, args: Namespace) -> None:
     config_dir = Path(args.config_dir)
     init(f"sqlite:///{config_dir / 'sqlite.db'}")
     Thread(
@@ -73,6 +73,7 @@ def _on_start(bot: Bot, args: Namespace) -> None:
         args=(cli, bot, args.interval, args.parallel, config_dir),
         daemon=True,
     ).start()
+    Thread(target=delete_old, args=(bot,), daemon=True).start()
 
 
 @cli.on(events.RawEvent)

@@ -48,16 +48,16 @@ def check_feeds(
         while True:
             delay = interval - took
             if delay > 0:
-                bot.logger.info(f"[WORKER] Sleeping for {delay:.1f} seconds")
+                bot.logger.info(f"[FEEDS] Sleeping for {delay:.1f} seconds")
                 time.sleep(delay)
-            bot.logger.info("[WORKER] Starting to check feeds")
+            bot.logger.info("[FEEDS] Starting to check feeds")
             lastcheck = time.time()
             with lastcheck_path.open("w", encoding="utf-8") as lastcheck_file:
                 lastcheck_file.write(str(lastcheck))
             with session_scope() as session:
                 feeds = session.execute(select(Feed)).scalars().all()
                 session.expunge_all()
-            bot.logger.info(f"[WORKER] There are {len(feeds)} feeds to check")
+            bot.logger.info(f"[FEEDS] There are {len(feeds)} feeds to check")
             accid = bot.rpc.get_all_account_ids()[0]
             for _ in pool.imap_unordered(
                 lambda f: _check_feed_task(cli, bot, accid, f), feeds
@@ -65,7 +65,7 @@ def check_feeds(
                 pass
             took = time.time() - lastcheck
             bot.logger.info(
-                f"[WORKER] Done checking {len(feeds)} feeds after {took:.1f} seconds"
+                f"[FEEDS] Done checking {len(feeds)} feeds after {took:.1f} seconds"
             )
 
 

@@ -2,10 +2,11 @@
 
 import base64
 import json
+import time
 from pathlib import Path
 
 from deltachat2 import Bot, MessageViewtype, SpecialContactId
-from sqlalchemy.future import select
+from sqlalchemy import delete, select
 
 from .orm import Post, session_scope
 
@@ -108,3 +109,17 @@ def normalize_url(url: str) -> str:
     if not url.startswith("http"):
         url = "https://" + url
     return url.rstrip("/")
+
+
+def delete_old(bot: Bot) -> None:
+    bot.logger.info("[CLEANER] Deleting old posts")
+    olddate = (time.time() - (60 * 60 * 24 * 360 * 2)) * 1000
+    while True:
+        try:
+            stmt = delete(Post).where(Post.active < olddate)
+            with session_scope() as session:
+                count = session.execute(stmt).rowcount
+            bot.logger.info(f"[CLEANER] Old posts deleted: {count}")
+        except Exception as err:
+            bot.logger.exception(err)
+        time.sleep(60 * 60 * 24)

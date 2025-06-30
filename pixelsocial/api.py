@@ -3,8 +3,8 @@
 import json
 
 from deltachat2 import Bot, ChatType, Message, MessageViewtype, SpecialContactId
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.future import select
 
 from .orm import Like, Post, Reply, session_scope
 from .util import upgrade_app
@@ -60,17 +60,19 @@ def process_update(
             reply["authorName"] = chat.name
         try:
             with session_scope() as session:
-                session.add(
-                    Reply(
-                        id=reply["id"],
-                        postid=reply["postId"],
-                        authorname=reply["authorName"],
-                        authorid=reply["authorId"],
-                        isadmin=reply["isAdmin"],
-                        date=reply["date"],
-                        text=reply["text"],
-                    )
+                reply = Reply(
+                    id=reply["id"],
+                    postid=reply["postId"],
+                    authorname=reply["authorName"],
+                    authorid=reply["authorId"],
+                    isadmin=reply["isAdmin"],
+                    date=reply["date"],
+                    text=reply["text"],
                 )
+                session.add(reply)
+                session.flush()
+                if reply.post.active < reply.date:  # noqa
+                    reply.post.active = reply.date
         except IntegrityError:
             bot.logger.error(f"got new reply with existing id: {reply['id']}")
             return
@@ -122,6 +124,14 @@ def process_update(
         with session_scope() as session:
             reply = session.execute(stmt).scalars().first()
             if reply:
+                post = reply.post
+                if post.replies[-1].id == reply.id:
+                    if len(post.replies) > 1:
+                        date = max(post.replies[-2].date, post.date)
+                    else:
+                        date = post.date
+                    if post.active > date:  # noqa
+                        post.active = date
                 session.delete(reply)
             else:
                 return  # user doesn't have right to delete
