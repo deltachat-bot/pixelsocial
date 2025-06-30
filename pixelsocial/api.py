@@ -51,7 +51,7 @@ def process_update(
     elif "reply" in payload:
         reply = payload["reply"]
         if len(reply["text"]) > 1000:
-            reply["text"] = post["text"][:1000] + "..."
+            reply["text"] = reply["text"][:1000] + "..."
         reply["authorId"] = str(chatid)
         reply["isAdmin"] = chatid == admin_chatid
         if reply["isAdmin"]:
