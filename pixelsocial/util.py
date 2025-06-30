@@ -102,3 +102,9 @@ def decode_base64(input_string: str) -> bytes:
     # Passing altchars here allows decoding both standard and urlsafe base64
     output_bytes = base64.b64decode(input_bytes + padding, altchars=b"-_")
     return output_bytes
+
+
+def normalize_url(url: str) -> str:
+    if not url.startswith("http"):
+        url = "https://" + url
+    return url.rstrip("/")

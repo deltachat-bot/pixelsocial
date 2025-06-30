@@ -13,6 +13,17 @@ _Session = sessionmaker()
 _lock = Lock()
 
 
+class Feed(Base):
+    """An RSS/Atom feed"""
+
+    __tablename__ = "feed"
+    url = Column(String, primary_key=True)
+    etag = Column(String)
+    modified = Column(String)
+    latest = Column(String)
+    filter = Column(String)
+
+
 class Post(Base):
     """An user post."""
 

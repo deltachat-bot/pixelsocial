@@ -11,21 +11,8 @@ from .util import upgrade_app
 
 
 def process_update(
-    bot: Bot, accid: int, admin_chatid: int, msgid: int, serial: int
+    bot: Bot, accid: int, admin_chatid: int, chatid: int, payload: dict
 ) -> None:
-
-    update = json.loads(bot.rpc.get_webxdc_status_updates(accid, msgid, serial - 1))[0]
-    payload = update["payload"]
-    if payload.get("is_bot"):
-        return
-
-    msg = bot.rpc.get_message(accid, msgid)
-    chatid = msg.chat_id
-    if msg.from_id != SpecialContactId.SELF or upgrade_app(
-        bot, accid, admin_chatid, chatid, msgid
-    ):
-        return
-
     size = len(json.dumps(payload))
     if size > 1024**2:
         bot.logger.info(f"ignoring too big update: {size} Bytes")
@@ -35,6 +22,8 @@ def process_update(
         post = payload["post"]
         post["authorId"] = str(chatid)
         post["isAdmin"] = chatid == admin_chatid
+        post["likes"] = 0
+        post["replies"] = 0
         if post["isAdmin"]:
             chat = bot.rpc.get_basic_chat_info(accid, admin_chatid)
             post["authorName"] = chat.name
