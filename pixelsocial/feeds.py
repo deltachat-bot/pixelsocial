@@ -101,7 +101,8 @@ def _check_feed(cli: BotCli, bot: Bot, accid: int, feed: Feed) -> None:
             "likes": 0,
             "replies": 0,
         }
-        process_update(bot, accid, False, admin_chatid, feed.url, {"post": data})
+        update = {"payload": {"post": data}, "info": f"{name} created a post"}
+        process_update(bot, accid, False, admin_chatid, feed.url, update)
 
     latest = get_latest_date(d.entries) or feed.latest
     modified = d.get("modified") or d.get("updated")

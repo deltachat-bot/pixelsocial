@@ -104,7 +104,7 @@ def log_event(bot: Bot, accid: int, event: CoreEvent) -> None:
                     if chat.chat_type == ChatType.SINGLE:
                         contactid = bot.rpc.get_chat_contacts(accid, chatid)[0]
                         isadmin = cli.is_admin(bot.rpc, accid, contactid)
-                process_update(bot, accid, isadmin, admin, chatid, payload)
+                process_update(bot, accid, isadmin, admin, chatid, update)
     elif event.kind == EventType.SECUREJOIN_INVITER_PROGRESS:
         if event.progress == 1000:
             if not bot.rpc.get_contact(accid, event.contact_id).is_bot:

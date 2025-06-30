@@ -9,7 +9,7 @@ from sqlalchemy.future import select
 
 from .orm import Post, session_scope
 
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.6.0"
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 

@@ -11,8 +11,9 @@ from .util import upgrade_app
 
 
 def process_update(
-    bot: Bot, accid: int, isadmin: bool, admin_chatid: int, chatid: int, payload: dict
+    bot: Bot, accid: int, isadmin: bool, admin_chatid: int, chatid: int, update: dict
 ) -> None:
+    payload = update["payload"]
     size = len(json.dumps(payload))
     if size > 1024**2:
         bot.logger.info(f"ignoring too big update: {size} Bytes")
@@ -128,8 +129,9 @@ def process_update(
         return
 
     payload["is_bot"] = True
-    update = json.dumps({"payload": payload})
-    broadcast(bot, accid, admin_chatid, chatid, update)
+
+    update = {"payload": payload, "info": update.get("info")}
+    broadcast(bot, accid, admin_chatid, chatid, json.dumps(update))
 
 
 def broadcast(
