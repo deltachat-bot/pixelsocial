@@ -18,7 +18,7 @@ classifiers = [
   "License :: OSI Approved :: GNU Affero General Public License v3",
 ]
 dependencies = [
-    "deltabot-cli>=7.0.0,<8.0",
+    "deltabot-cli>=7.1.0,<8.0",
     "SQLAlchemy>=2.0.41,<3.0",
     "feedparser>=6.0.11,<7.0",
     "requests>=2.32.4,<3.0",

@@ -11,7 +11,7 @@ from .util import upgrade_app
 
 
 def process_update(
-    bot: Bot, accid: int, admin_chatid: int, chatid: int, payload: dict
+    bot: Bot, accid: int, isadmin: bool, admin_chatid: int, chatid: int, payload: dict
 ) -> None:
     size = len(json.dumps(payload))
     if size > 1024**2:
@@ -100,7 +100,7 @@ def process_update(
                 return  # like doesn't exist, ignore
     elif "deleteP" in payload:
         postid = payload["deleteP"]
-        if chatid == admin_chatid:
+        if isadmin:
             stmt = select(Post).filter(Post.id == postid)
         else:
             stmt = select(Post).filter(Post.id == postid, Post.authorid == str(chatid))
@@ -112,7 +112,7 @@ def process_update(
                 return  # user doesn't have right to delete
     elif "deleteR" in payload:
         replyid = payload["deleteR"]["replyId"]
-        if chatid == admin_chatid:
+        if isadmin:
             stmt = select(Reply).filter(Reply.id == replyid)
         else:
             stmt = select(Reply).filter(

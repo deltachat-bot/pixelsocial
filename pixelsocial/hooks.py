@@ -97,7 +97,14 @@ def log_event(bot: Bot, accid: int, event: CoreEvent) -> None:
             if msg.from_id == SpecialContactId.SELF and not upgrade_app(
                 bot, accid, admin, chatid, msgid
             ):
-                process_update(bot, accid, admin, chatid, payload)
+
+                isadmin = chatid == admin
+                if not isadmin:
+                    chat = bot.rpc.get_basic_chat_info(accid, chatid)
+                    if chat.chat_type == ChatType.SINGLE:
+                        contactid = bot.rpc.get_chat_contacts(accid, chatid)[0]
+                        isadmin = cli.is_admin(bot.rpc, accid, contactid)
+                process_update(bot, accid, isadmin, admin, chatid, payload)
     elif event.kind == EventType.SECUREJOIN_INVITER_PROGRESS:
         if event.progress == 1000:
             if not bot.rpc.get_contact(accid, event.contact_id).is_bot:
