@@ -10,7 +10,7 @@ from sqlalchemy import delete, select
 
 from .orm import Post, session_scope
 
-APP_VERSION = "0.7.0"
+APP_VERSION = "0.7.1"
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 
@@ -44,7 +44,7 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
         mode["selfName"] = chat.name
     send_update(bot, accid, msgid, {"botMode": mode}, APP_VERSION)
 
-    stmt = select(Post).order_by(Post.active).limit(100)
+    stmt = select(Post).order_by(Post.active.desc()).limit(100)
     with session_scope() as session:
         for post in session.execute(stmt).scalars():
             data = {
