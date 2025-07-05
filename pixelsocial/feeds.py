@@ -147,8 +147,6 @@ def _parse_entry(entry) -> tuple:
 
     desc = "\n".join(line.strip() for line in desc.split("\n"))
     desc = re.sub(r"\n{3,}", "\n\n", desc)
-    if len(desc) > 500:
-        desc = desc[:500] + "..."
     desc = (desc + "\n\n" + entry.get("link")).strip()
 
     if entry.get("published_parsed"):

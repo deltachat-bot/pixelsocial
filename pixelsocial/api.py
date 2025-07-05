@@ -21,9 +21,6 @@ def process_update(
 
     if "post" in payload:
         post = payload["post"]
-        limit = 400 if post["style"] else 1000
-        if len(post["text"]) > limit:
-            post["text"] = post["text"][:limit] + "..."
         post["authorId"] = str(chatid)
         post["isAdmin"] = chatid == admin_chatid
         post["likes"] = 0
@@ -51,8 +48,6 @@ def process_update(
             return
     elif "reply" in payload:
         reply = payload["reply"]
-        if len(reply["text"]) > 1000:
-            reply["text"] = reply["text"][:1000] + "..."
         reply["authorId"] = str(chatid)
         reply["isAdmin"] = chatid == admin_chatid
         if reply["isAdmin"]:
