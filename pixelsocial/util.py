@@ -8,6 +8,7 @@ from pathlib import Path
 from deltachat2 import Bot, MessageViewtype, SpecialContactId
 from sqlalchemy import delete, select
 
+from .cli import cli
 from .orm import Post, session_scope
 
 APP_VERSION = "0.8.0"
@@ -37,11 +38,14 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
 
     bot.rpc.misc_set_draft(accid, chatid, None, XDC_PATH, None, None, None)
     msgid = bot.rpc.get_draft(accid, chatid).id
-    isadmin = chatid == admin_chatid
-    mode = {"selfId": str(chatid), "isAdmin": isadmin}
-    if isadmin:
+    mode = {"selfId": str(chatid), "isAdmin": False}
+    if chatid == admin_chatid:
         chat = bot.rpc.get_basic_chat_info(accid, admin_chatid)
         mode["selfName"] = chat.name
+        mode["isAdmin"] = True
+    else:
+        contacts = bot.rpc.get_chat_contacts(accid, chatid)
+        mode["isAdmin"] = cli.is_admin(bot.rpc, accid, contacts[0])
     send_update(bot, accid, msgid, {"botMode": mode}, APP_VERSION)
 
     stmt = select(Post).order_by(Post.active.desc()).limit(100)

@@ -13,13 +13,13 @@ from typing import Optional
 import bs4
 import feedparser
 import requests
-from deltabot_cli import BotCli
 from deltachat2 import Bot
 from feedparser.datetimes import _parse_date
 from feedparser.exceptions import CharacterEncodingOverride
 from sqlalchemy import select, update
 
 from .api import process_update
+from .cli import cli
 from .orm import Feed, session_scope
 
 www = requests.Session()
@@ -31,9 +31,7 @@ www.headers.update(
 www.request = functools.partial(www.request, timeout=15)  # type: ignore
 
 
-def check_feeds(
-    cli: BotCli, bot: Bot, interval: int, pool_size: int, app_dir: Path
-) -> None:
+def check_feeds(bot: Bot, interval: int, pool_size: int, app_dir: Path) -> None:
     lastcheck_path = app_dir / "lastcheck.txt"
     lastcheck = 0.0
     if lastcheck_path.exists():
@@ -60,7 +58,7 @@ def check_feeds(
             bot.logger.info(f"[FEEDS] There are {len(feeds)} feeds to check")
             accid = bot.rpc.get_all_account_ids()[0]
             for _ in pool.imap_unordered(
-                lambda f: _check_feed_task(cli, bot, accid, f), feeds
+                lambda f: _check_feed_task(bot, accid, f), feeds
             ):
                 pass
             took = time.time() - lastcheck
@@ -69,16 +67,16 @@ def check_feeds(
             )
 
 
-def _check_feed_task(cli: BotCli, bot: Bot, accid: int, feed: Feed):
+def _check_feed_task(bot: Bot, accid: int, feed: Feed):
     bot.logger.debug(f"Checking feed: {feed.url}")
     try:
-        _check_feed(cli, bot, accid, feed)
+        _check_feed(bot, accid, feed)
     except Exception as err:
         bot.logger.exception(err)
     bot.logger.debug(f"Done checking feed: {feed.url}")
 
 
-def _check_feed(cli: BotCli, bot: Bot, accid: int, feed: Feed) -> None:
+def _check_feed(bot: Bot, accid: int, feed: Feed) -> None:
     d = parse_feed(feed.url, etag=feed.etag, modified=feed.modified)
 
     if d.entries and feed.latest:

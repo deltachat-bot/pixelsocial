@@ -1,6 +1,6 @@
 """Social network bot"""
 
-from .hooks import cli
+from .hooks import cli  # import from hooks so they are added
 
 
 def main() -> None:

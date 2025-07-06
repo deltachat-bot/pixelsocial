@@ -5,7 +5,6 @@ from argparse import Namespace
 from pathlib import Path
 from threading import Thread
 
-from deltabot_cli import BotCli
 from deltachat2 import (
     Bot,
     ChatType,
@@ -20,31 +19,11 @@ from deltachat2 import (
 from rich.logging import RichHandler
 from sqlalchemy import select
 
-from ._version import __version__
 from .api import process_update
+from .cli import cli
 from .feeds import check_feeds, parse_feed
 from .orm import Feed, init, session_scope
 from .util import delete_old, normalize_url, send_app, upgrade_app
-
-cli = BotCli("pixelsocial")
-cli.add_generic_option("-v", "--version", action="version", version=__version__)
-cli.add_generic_option(
-    "--interval",
-    type=int,
-    default=60 * 5,
-    help="how many seconds to sleep before checking the feeds again (default: %(default)s)",
-)
-cli.add_generic_option(
-    "--parallel",
-    type=int,
-    default=10,
-    help="how many feeds to check in parallel (default: %(default)s)",
-)
-cli.add_generic_option(
-    "--no-time",
-    help="do not display date timestamp in log messages",
-    action="store_false",
-)
 
 HELP = (
     "I am a bot that allows you to interact in PixelSocial"
@@ -70,7 +49,7 @@ def on_start(bot: Bot, args: Namespace) -> None:
     init(f"sqlite:///{config_dir / 'sqlite.db'}")
     Thread(
         target=check_feeds,
-        args=(cli, bot, args.interval, args.parallel, config_dir),
+        args=(bot, args.interval, args.parallel, config_dir),
         daemon=True,
     ).start()
     Thread(target=delete_old, args=(bot,), daemon=True).start()
