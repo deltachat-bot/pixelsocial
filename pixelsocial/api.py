@@ -22,10 +22,10 @@ def process_update(
     if "post" in payload:
         post = payload["post"]
         post["authorId"] = str(chatid)
-        post["isAdmin"] = chatid == admin_chatid
+        post["isAdmin"] = isadmin
         post["likes"] = 0
         post["replies"] = 0
-        if post["isAdmin"]:
+        if chatid == admin_chatid:
             chat = bot.rpc.get_basic_chat_info(accid, admin_chatid)
             post["authorName"] = chat.name
         try:
@@ -49,8 +49,8 @@ def process_update(
     elif "reply" in payload:
         reply = payload["reply"]
         reply["authorId"] = str(chatid)
-        reply["isAdmin"] = chatid == admin_chatid
-        if reply["isAdmin"]:
+        reply["isAdmin"] = isadmin
+        if chatid == admin_chatid:
             chat = bot.rpc.get_basic_chat_info(accid, admin_chatid)
             reply["authorName"] = chat.name
         try:
