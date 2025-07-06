@@ -10,7 +10,7 @@ from sqlalchemy import delete, select
 
 from .orm import Post, session_scope
 
-APP_VERSION = "0.7.1"
+APP_VERSION = "0.8.0"
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 
