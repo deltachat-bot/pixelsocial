@@ -96,6 +96,25 @@ def process_update(
                 session.delete(like)
             else:
                 return  # like doesn't exist, ignore
+    elif "deleteAll" in payload:
+        userid = payload["deleteAll"]
+        if not isadmin and userid != str(chatid):
+            return  # user doesn't have right to delete
+        pstmt = select(Post).filter(Post.authorid == userid)
+        rstmt = select(Reply).filter(Reply.authorid == userid)
+        with session_scope() as session:
+            for post in session.execute(pstmt).scalars():
+                session.delete(post)
+            for reply in session.execute(rstmt).scalars():
+                post = reply.post
+                if post.replies[-1].id == reply.id:
+                    if len(post.replies) > 1:
+                        date = max(post.replies[-2].date, post.date)
+                    else:
+                        date = post.date
+                    if post.active > date:  # noqa
+                        post.active = date
+                session.delete(reply)
     elif "deleteP" in payload:
         postid = payload["deleteP"]
         if isadmin:
