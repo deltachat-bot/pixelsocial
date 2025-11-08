@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
 Base: Any = declarative_base()
-_Session = sessionmaker()
+_session = sessionmaker()
 _lock = Lock()
 
 
@@ -68,7 +68,7 @@ class Reply(Base):
 def session_scope():
     """Provide a transactional scope around a series of operations."""
     with _lock:
-        session = _Session()
+        session = _session()
         try:
             yield session
             session.commit()
@@ -83,4 +83,4 @@ def init(path: str, debug: bool = False) -> None:
     """Initialize engine."""
     engine = create_engine(path, echo=debug)
     Base.metadata.create_all(engine)
-    _Session.configure(bind=engine)
+    _session.configure(bind=engine)
