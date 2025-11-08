@@ -36,7 +36,8 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
         if msg.from_id == SpecialContactId.SELF:
             bot.rpc.delete_messages_for_all(accid, [msgid])
 
-    bot.rpc.misc_set_draft(accid, chatid, None, XDC_PATH, None, None, None)
+    text = "To log out, send /stop"
+    bot.rpc.misc_set_draft(accid, chatid, text, XDC_PATH, None, None, None)
     msgid = bot.rpc.get_draft(accid, chatid).id
     mode = {"selfId": str(chatid), "isAdmin": False}
     if chatid == admin_chatid:
