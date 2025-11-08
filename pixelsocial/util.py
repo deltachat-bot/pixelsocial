@@ -11,7 +11,7 @@ from sqlalchemy import delete, select
 from .cli import cli
 from .orm import Post, session_scope
 
-APP_VERSION = "0.10.0"
+APP_VERSION = "0.11.0"
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 
@@ -40,12 +40,15 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
     msgid = bot.rpc.get_draft(accid, chatid).id
     mode = {"selfId": str(chatid), "isAdmin": False}
     if chatid == admin_chatid:
+        mode["isAdmin"] = True
         chat = bot.rpc.get_basic_chat_info(accid, admin_chatid)
         mode["selfName"] = chat.name
-        mode["isAdmin"] = True
     else:
-        contacts = bot.rpc.get_chat_contacts(accid, chatid)
-        mode["isAdmin"] = cli.is_admin(bot.rpc, accid, contacts[0])
+        contid = bot.rpc.get_chat_contacts(accid, chatid)[0]
+        mode["isAdmin"] = cli.is_admin(bot.rpc, accid, contid)
+        contact = bot.rpc.get_contact(accid, contid)
+        if contact.auth_name != contact.display_name:
+            mode["selfName"] = contact.display_name
     send_update(bot, accid, msgid, {"botMode": mode}, APP_VERSION)
 
     stmt = select(Post).order_by(Post.active.desc()).limit(100)

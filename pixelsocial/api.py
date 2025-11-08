@@ -19,15 +19,22 @@ def process_update(
         bot.logger.info(f"ignoring too big update: {size} Bytes")
         return
 
+    if "setName" in payload:
+        name = payload["setName"]["name"]
+        if chatid == admin_chatid:
+            if name:
+                bot.rpc.set_chat_name(accid, chatid, name)
+        else:
+            contid = bot.rpc.get_chat_contacts(accid, chatid)[0]
+            bot.rpc.change_contact_name(accid, contid, name)
+        return
+
     if "post" in payload:
         post = payload["post"]
         post["authorId"] = str(chatid)
         post["isAdmin"] = isadmin
         post["likes"] = 0
         post["replies"] = 0
-        if chatid == admin_chatid:
-            chat = bot.rpc.get_basic_chat_info(accid, admin_chatid)
-            post["authorName"] = chat.name
         try:
             with session_scope() as session:
                 session.add(
@@ -50,9 +57,6 @@ def process_update(
         reply = payload["reply"]
         reply["authorId"] = str(chatid)
         reply["isAdmin"] = isadmin
-        if chatid == admin_chatid:
-            chat = bot.rpc.get_basic_chat_info(accid, admin_chatid)
-            reply["authorName"] = chat.name
         try:
             with session_scope() as session:
                 reply = Reply(
@@ -150,6 +154,7 @@ def process_update(
             else:
                 return  # user doesn't have right to delete
     else:
+        bot.logger.info(f"Unknown payload: {payload}")
         return
 
     payload["is_bot"] = True
