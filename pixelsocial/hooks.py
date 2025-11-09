@@ -4,6 +4,7 @@ import json
 from argparse import Namespace
 from pathlib import Path
 from threading import Thread
+from typing import Final
 
 from deltachat2 import (
     Bot,
@@ -108,6 +109,7 @@ def _help(bot: Bot, accid: int, event: NewMsgEvent) -> None:
     )
     if msg.chat_id == cli.get_admin_chat(bot.rpc, accid):
         text += (
+            "/stats - Social network statistics.\n\n"
             "/sub URL [filter] - Subscribe to the given feed."
             " If a filter is provided, post that don't match the filter will be ignored\n\n"
             "/unsub URL - Unsubscribe from the given feed."
@@ -140,6 +142,37 @@ def _stop(bot: Bot, accid: int, event: NewMsgEvent) -> None:
             bot.rpc.delete_messages_for_all(accid, [msgid])
     text = "Done, you logged out. To log in again send: /start"
     bot.rpc.send_msg(accid, chatid, MsgData(text=text))
+
+
+@cli.on(events.NewMessage(command="/stats"))
+def _stats(bot: Bot, accid: int, event: NewMsgEvent) -> None:
+    msg: Final = event.msg
+    chatid: Final = msg.chat_id
+    bot.rpc.markseen_msgs(accid, [msg.id])
+
+    if not cli.is_admin(bot.rpc, accid, msg.from_id):
+        reply = MsgData(
+            text="❌ That command can only be used by admins.",
+            quoted_message_id=msg.id,
+        )
+        bot.rpc.send_msg(accid, chatid, reply)
+        return
+
+    count = 0
+    chats = bot.rpc.get_chatlist_entries(accid, None, None, None)
+    for cid in chats:
+        chat = bot.rpc.get_basic_chat_info(accid, cid)
+        if chat.chat_type != ChatType.SINGLE:
+            continue
+        msgids = bot.rpc.get_chat_media(accid, cid, MessageViewtype.WEBXDC, None, None)
+        for msgid in reversed(msgids):
+            msg2 = bot.rpc.get_message(accid, msgid)
+            if msg2.from_id == SpecialContactId.SELF:
+                count += 1
+                break
+
+    reply = MsgData(text=f"👤 Users: {count}")
+    bot.rpc.send_msg(accid, chatid, reply)
 
 
 @cli.on(events.NewMessage(command="/sub"))
