@@ -62,6 +62,8 @@ class Reply(Base):
     isadmin = Column(Integer)
     date = Column(Integer)
     text = Column(String)
+    image = Column(String)
+    style = Column(Integer)
 
 
 @contextmanager

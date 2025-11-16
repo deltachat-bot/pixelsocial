@@ -23,6 +23,7 @@ from sqlalchemy import select
 from .api import process_update
 from .cli import cli
 from .feeds import check_feeds, parse_feed
+from .migrations import run_migrations
 from .orm import Feed, init, session_scope
 from .util import delete_old, normalize_url, send_app, upgrade_app
 
@@ -47,7 +48,9 @@ def on_init(bot: Bot, args: Namespace) -> None:
 @cli.on_start
 def on_start(bot: Bot, args: Namespace) -> None:
     config_dir = Path(args.config_dir)
-    init(f"sqlite:///{config_dir / 'sqlite.db'}")
+    dbpath = config_dir / "sqlite.db"
+    run_migrations(bot, dbpath)
+    init(f"sqlite:///{dbpath}")
     Thread(
         target=check_feeds,
         args=(bot, args.interval, args.parallel, config_dir),

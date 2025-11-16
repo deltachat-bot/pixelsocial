@@ -67,6 +67,8 @@ def process_update(
                     isadmin=reply["isAdmin"],
                     date=reply["date"],
                     text=reply["text"],
+                    image=reply["image"],
+                    style=reply["style"],
                 )
                 session.add(reply)
                 session.flush()
