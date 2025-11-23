@@ -11,7 +11,7 @@ from sqlalchemy import delete, select
 from .cli import cli
 from .orm import Post, session_scope
 
-APP_VERSION = "0.12.0"
+APP_VERSION = "0.13.0"
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 
