@@ -5,7 +5,7 @@ from pathlib import Path
 
 from deltachat2 import Bot
 
-DATABASE_VERSION = 1
+DATABASE_VERSION = 2
 
 
 def get_db(path: Path) -> sqlite3.Connection:
@@ -63,3 +63,8 @@ def run_migrations(bot: Bot, path: Path) -> None:
 def migrate1(_bot: Bot, database: sqlite3.Connection) -> None:
     database.execute("ALTER TABLE reply ADD COLUMN image VARCHAR")
     database.execute("ALTER TABLE reply ADD COLUMN style INTEGER")
+
+
+def migrate2(_bot: Bot, database: sqlite3.Connection) -> None:
+    database.execute("ALTER TABLE post ADD COLUMN filename VARCHAR")
+    database.execute("ALTER TABLE reply ADD COLUMN filename VARCHAR")

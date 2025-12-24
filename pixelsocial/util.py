@@ -11,7 +11,7 @@ from sqlalchemy import delete, select
 from .cli import cli
 from .orm import Post, session_scope
 
-APP_VERSION = "0.13.0"
+APP_VERSION = "0.14.0"
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 
@@ -63,7 +63,8 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
                 "date": post.date,
                 "active": post.active,
                 "text": post.text,
-                "image": post.image,
+                "file": post.image,
+                "filename": post.filename or "",
                 "style": post.style,
                 "likes": 0,
                 "replies": 0,
@@ -79,7 +80,8 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
                     "isAdmin": reply.isadmin,
                     "date": reply.date,
                     "text": reply.text,
-                    "image": reply.image or "",
+                    "file": reply.image or "",
+                    "filename": reply.filename or "",
                     "style": reply.style or 0,
                 }
                 send_update(bot, accid, msgid, {"reply": data})

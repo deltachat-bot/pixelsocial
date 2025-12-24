@@ -36,6 +36,7 @@ class Post(Base):
     active = Column(Integer)
     text = Column(String)
     image = Column(String)
+    filename = Column(String)
     style = Column(Integer)
     likes = relationship("Like", backref="post", cascade="all, delete, delete-orphan")
     replies = relationship(
@@ -63,6 +64,7 @@ class Reply(Base):
     date = Column(Integer)
     text = Column(String)
     image = Column(String)
+    filename = Column(String)
     style = Column(Integer)
 
 

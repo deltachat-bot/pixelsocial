@@ -94,8 +94,9 @@ def _check_feed(bot: Bot, accid: int, feed: Feed) -> None:
             "date": pubdate,
             "active": pubdate,
             "text": text,
-            "image": "",
-            "style": "",
+            "file": "",
+            "filename": "",
+            "style": 0,
             "likes": 0,
             "replies": 0,
         }

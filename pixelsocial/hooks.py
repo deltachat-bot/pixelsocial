@@ -62,11 +62,11 @@ def on_start(bot: Bot, args: Namespace) -> None:
 @cli.on(events.RawEvent)
 def log_event(bot: Bot, accid: int, event: CoreEvent) -> None:
     if event.kind == EventType.INFO:
-        bot.logger.debug(event.msg)
+        bot.logger.debug(f"[accid={accid}] {event.msg}")
     elif event.kind == EventType.WARNING:
-        bot.logger.warning(event.msg)
+        bot.logger.warning(f"[accid={accid}] {event.msg}")
     elif event.kind == EventType.ERROR:
-        bot.logger.error(event.msg)
+        bot.logger.error(f"[accid={accid}] {event.msg}")
     elif event.kind == EventType.WEBXDC_STATUS_UPDATE:
         msgid = event.msg_id
         serial = event.status_update_serial
@@ -74,7 +74,9 @@ def log_event(bot: Bot, accid: int, event: CoreEvent) -> None:
     elif event.kind == EventType.SECUREJOIN_INVITER_PROGRESS:
         if event.progress == 1000:
             if not bot.rpc.get_contact(accid, event.contact_id).is_bot:
-                bot.logger.debug("QR scanned by contact id=%s", event.contact_id)
+                bot.logger.debug(
+                    f"[accid={accid}] QR scanned by contact id={event.contact_id}"
+                )
                 chatid = bot.rpc.create_chat_by_contact_id(accid, event.contact_id)
                 admin_chatid = cli.get_admin_chat(bot.rpc, accid)
                 send_app(bot, accid, admin_chatid, chatid)

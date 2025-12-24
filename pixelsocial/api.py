@@ -15,7 +15,7 @@ def process_update(
 ) -> None:
     payload = update["payload"]
     size = len(json.dumps(payload))
-    if size > 1024**2:
+    if size > 1024**2 * 3:
         bot.logger.info(f"ignoring too big update: {size} Bytes")
         return
 
@@ -46,7 +46,8 @@ def process_update(
                         date=post["date"],
                         active=post["active"],
                         text=post["text"],
-                        image=post["image"],
+                        image=post["file"],
+                        filename=post["filename"],
                         style=post["style"],
                     )
                 )
@@ -67,7 +68,8 @@ def process_update(
                     isadmin=reply["isAdmin"],
                     date=reply["date"],
                     text=reply["text"],
-                    image=reply["image"],
+                    image=reply["file"],
+                    filename=reply["filename"],
                     style=reply["style"],
                 )
                 session.add(reply)
