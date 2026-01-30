@@ -15,13 +15,11 @@ def get_db(path: Path) -> sqlite3.Connection:
 
 
 def create_version_table(database: sqlite3.Connection) -> None:
-    database.execute(
-        """CREATE TABLE IF NOT EXISTS "database" (
+    database.execute("""CREATE TABLE IF NOT EXISTS "database" (
         "id" INTEGER NOT NULL,
 	"version" INTEGER NOT NULL,
 	PRIMARY KEY("id")
-        )"""
-    )
+        )""")
 
 
 def set_version(database: sqlite3.Connection, version: int) -> None:
