@@ -12,6 +12,7 @@ from .cli import cli
 from .orm import Post, session_scope
 
 APP_VERSION = "0.15.0"
+INACTIVITY_DAYS = 30
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 
@@ -125,7 +126,7 @@ def normalize_url(url: str) -> str:
 
 def logout_inactive_users(bot: Bot) -> None:
     bot.logger.info("[CLEANER] Checking for inactive users")
-    threshold = time.time() - (60 * 60 * 24 * 30)
+    threshold = time.time() - (60 * 60 * 24 * INACTIVITY_DAYS)
     count = 0
     try:
         for accid in bot.rpc.get_all_account_ids():
@@ -152,7 +153,7 @@ def logout_inactive_users(bot: Bot) -> None:
                         has_app = True
                 if has_app:
                     text = (
-                        "You were logged out due to inactivity."
+                        f"You were logged out due to {INACTIVITY_DAYS} days of inactivity."
                         " To join again send /start"
                     )
                     bot.rpc.send_msg(accid, chatid, MsgData(text=text))
