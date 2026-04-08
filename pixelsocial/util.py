@@ -16,9 +16,7 @@ INACTIVITY_DAYS = 30
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 
-def upgrade_app(
-    bot: Bot, accid: int, admin_chatid: int, chatid: int, msgid: int
-) -> int:
+def upgrade_app(bot: Bot, accid: int, admin_chatid: int, chatid: int, msgid: int) -> int:
     enc_data = bot.rpc.get_webxdc_blob(accid, msgid, "manifest.toml")
     version = ""
     for line in decode_base64(enc_data).decode().splitlines():
@@ -37,8 +35,7 @@ def send_app(bot: Bot, accid: int, admin_chatid: int, chatid: int) -> int:
         if msg.from_id == SpecialContactId.SELF:
             bot.rpc.delete_messages_for_all(accid, [msgid])
 
-    text = "To log out, send /stop"
-    bot.rpc.misc_set_draft(accid, chatid, text, XDC_PATH, None, None, None)
+    bot.rpc.misc_set_draft(accid, chatid, "To log out, send /stop", XDC_PATH, None, None, None)
     msgid = bot.rpc.get_draft(accid, chatid).id
     mode = {"selfId": str(chatid), "isAdmin": False}
     if chatid == admin_chatid:
@@ -138,26 +135,21 @@ def logout_inactive_users(bot: Bot) -> None:
                     if chatid != admin_chat:
                         bot.rpc.delete_chat(accid, chatid)
                     continue
-                contacts = bot.rpc.get_chat_contacts(accid, chatid)
-                contact = bot.rpc.get_contact(accid, contacts[0])
+                contact = bot.rpc.get_contact(accid, bot.rpc.get_chat_contacts(accid, chatid)[0])
                 if contact.last_seen > threshold:
                     continue  # last seen less than 30 days ago
-                msgids = bot.rpc.get_chat_media(
-                    accid, chatid, MessageViewtype.WEBXDC, None, None
-                )
-                has_app = False
+                msgids = bot.rpc.get_chat_media(accid, chatid, MessageViewtype.WEBXDC, None, None)
                 for msgid in reversed(msgids):
                     msg = bot.rpc.get_message(accid, msgid)
                     if msg.from_id == SpecialContactId.SELF:
                         bot.rpc.delete_messages_for_all(accid, [msgid])
-                        has_app = True
-                if has_app:
-                    text = (
-                        f"You were logged out due to {INACTIVITY_DAYS} days of inactivity."
-                        " To join again send /start"
-                    )
-                    bot.rpc.send_msg(accid, chatid, MsgData(text=text))
-                    count += 1
+                        text = (
+                            f"You were logged out due to {INACTIVITY_DAYS} days of inactivity."
+                            " To join again send /start"
+                        )
+                        bot.rpc.send_msg(accid, chatid, MsgData(text=text))
+                        count += 1
+                        break
 
                 bot.rpc.delete_chat(accid, chatid)
     except Exception as err:

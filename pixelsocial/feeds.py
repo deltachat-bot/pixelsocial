@@ -24,9 +24,7 @@ from .orm import Feed, session_scope
 
 www = requests.Session()
 www.headers.update(
-    {
-        "user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"
-    }
+    {"user-agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0"}
 )
 www.request = functools.partial(www.request, timeout=15)  # type: ignore
 
@@ -57,14 +55,10 @@ def check_feeds(bot: Bot, interval: int, pool_size: int, app_dir: Path) -> None:
                 session.expunge_all()
             bot.logger.info(f"[FEEDS] There are {len(feeds)} feeds to check")
             accid = bot.rpc.get_all_account_ids()[0]
-            for _ in pool.imap_unordered(
-                lambda f: _check_feed_task(bot, accid, f), feeds
-            ):
+            for _ in pool.imap_unordered(lambda f: _check_feed_task(bot, accid, f), feeds):
                 pass
             took = time.time() - lastcheck
-            bot.logger.info(
-                f"[FEEDS] Done checking {len(feeds)} feeds after {took:.1f} seconds"
-            )
+            bot.logger.info(f"[FEEDS] Done checking {len(feeds)} feeds after {took:.1f} seconds")
 
 
 def _check_feed_task(bot: Bot, accid: int, feed: Feed):
@@ -107,9 +101,7 @@ def _check_feed(bot: Bot, accid: int, feed: Feed) -> None:
     modified = d.get("modified") or d.get("updated")
     with session_scope() as session:
         stmt = update(Feed).where(Feed.url == feed.url)
-        session.execute(
-            stmt.values(etag=d.get("etag"), modified=modified, latest=latest)
-        )
+        session.execute(stmt.values(etag=d.get("etag"), modified=modified, latest=latest))
 
 
 def parse_entries(entries: list, filter_: str) -> Iterator[tuple[str, int, str]]:
@@ -210,14 +202,15 @@ def parse_feed(
             "Nov",
             "Dec",
         ]
-        headers["If-Modified-Since"] = "%s, %02d %s %04d %02d:%02d:%02d GMT" % (  # noqa
-            short_weekdays[modified[6]],
-            modified[2],
-            months[modified[1] - 1],
-            modified[0],
-            modified[3],
-            modified[4],
-            modified[5],
+        day = short_weekdays[modified[6]]
+        daynum = modified[2]
+        month = months[modified[1] - 1]
+        year = modified[0]
+        hour = modified[3]
+        minutes = modified[4]
+        sec = modified[5]
+        headers["If-Modified-Since"] = (
+            f"{day}, {daynum:02d} {month} {year:04d} {hour:02d}:{minutes:02d}:{sec:02d} GMT"
         )
     with www.get(url, headers=headers) as resp:
         resp.raise_for_status()
