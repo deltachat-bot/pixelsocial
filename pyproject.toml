@@ -34,9 +34,7 @@ dev = [
   "black",
   "mypy",
   "isort",
-  "pylint",
-  "pylama",
-  "pytest",
+  "prospector",
   "setuptools",
   "types-requests",
 ]
@@ -52,6 +50,9 @@ version_file = "pixelsocial/_version.py"
 packages = [ "pixelsocial" ]
 zip-safe = false
 include-package-data = true
+
+[tool.black]
+line-length = 100
 
 [tool.isort]
 profile = "black"
