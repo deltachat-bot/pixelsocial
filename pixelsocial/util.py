@@ -5,13 +5,14 @@ import json
 import time
 from pathlib import Path
 
-from deltachat2 import Bot, MessageViewtype, SpecialContactId
+from deltachat2 import Bot, MessageViewtype, SpecialContactId, ChatType, MsgData
 from sqlalchemy import delete, select
 
 from .cli import cli
 from .orm import Post, session_scope
 
 APP_VERSION = "0.15.0"
+INACTIVITY_DAYS = 30
 XDC_PATH = str(Path(__file__).parent / "app.xdc")
 
 
@@ -123,15 +124,59 @@ def normalize_url(url: str) -> str:
     return url.rstrip("/")
 
 
-def delete_old(bot: Bot) -> None:
+def logout_inactive_users(bot: Bot) -> None:
+    bot.logger.info("[CLEANER] Checking for inactive users")
+    threshold = time.time() - (60 * 60 * 24 * INACTIVITY_DAYS)
+    count = 0
+    try:
+        for accid in bot.rpc.get_all_account_ids():
+            chats = bot.rpc.get_chatlist_entries(accid, None, None, None)
+            for chatid in chats:
+                chat = bot.rpc.get_basic_chat_info(accid, chatid)
+                if chat.chat_type != ChatType.SINGLE:
+                    bot.rpc.delete_chat(accid, chatid)
+                    continue
+                contacts = bot.rpc.get_chat_contacts(accid, chatid)
+                contact = bot.rpc.get_contact(accid, contacts[0])
+                if contact.last_seen > threshold:
+                    continue  # last seen less than 30 days ago
+                msgids = bot.rpc.get_chat_media(
+                    accid, chatid, MessageViewtype.WEBXDC, None, None
+                )
+                has_app = False
+                for msgid in msgids:
+                    msg = bot.rpc.get_message(accid, msgid)
+                    if msg.from_id == SpecialContactId.SELF:
+                        bot.rpc.delete_messages_for_all(accid, [msgid])
+                        has_app = True
+                if has_app:
+                    text = (
+                        f"You were logged out due to {INACTIVITY_DAYS} days of inactivity."
+                        " To join again send /start"
+                    )
+                    bot.rpc.send_msg(accid, chatid, MsgData(text=text))
+                    count += 1
+                else:
+                    bot.rpc.delete_chat(accid, chatid)
+    except Exception as err:
+        bot.logger.exception(err)
+    bot.logger.info(f"[CLEANER] Inactive users logged out: {count}")
+
+
+def delete_old_posts(bot: Bot) -> None:
     bot.logger.info("[CLEANER] Deleting old posts")
     olddate = (time.time() - (60 * 60 * 24 * 360 * 2)) * 1000
+    try:
+        stmt = delete(Post).where(Post.active < olddate)
+        with session_scope() as session:
+            count = session.execute(stmt).rowcount
+    except Exception as err:
+        bot.logger.exception(err)
+    bot.logger.info(f"[CLEANER] Old posts deleted: {count}")
+
+
+def housekeeping_worker(bot: Bot) -> None:
     while True:
-        try:
-            stmt = delete(Post).where(Post.active < olddate)
-            with session_scope() as session:
-                count = session.execute(stmt).rowcount
-            bot.logger.info(f"[CLEANER] Old posts deleted: {count}")
-        except Exception as err:
-            bot.logger.exception(err)
+        logout_inactive_users(bot)
+        delete_old_posts(bot)
         time.sleep(60 * 60 * 24)

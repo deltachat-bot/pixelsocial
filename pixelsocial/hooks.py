@@ -25,7 +25,7 @@ from .cli import cli
 from .feeds import check_feeds, parse_feed
 from .migrations import run_migrations
 from .orm import Feed, init, session_scope
-from .util import delete_old, normalize_url, send_app, upgrade_app
+from .util import housekeeping_worker, normalize_url, send_app, upgrade_app
 
 HELP = (
     "I am a bot that allows you to interact in PixelSocial"
@@ -56,7 +56,7 @@ def on_start(bot: Bot, args: Namespace) -> None:
         args=(bot, args.interval, args.parallel, config_dir),
         daemon=True,
     ).start()
-    Thread(target=delete_old, args=(bot,), daemon=True).start()
+    Thread(target=housekeeping_worker, args=(bot,), daemon=True).start()
 
 
 @cli.on(events.RawEvent)
