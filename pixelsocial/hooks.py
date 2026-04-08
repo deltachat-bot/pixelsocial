@@ -74,9 +74,7 @@ def log_event(bot: Bot, accid: int, event: CoreEvent) -> None:
     elif event.kind == EventType.SECUREJOIN_INVITER_PROGRESS:
         if event.progress == 1000:
             if not bot.rpc.get_contact(accid, event.contact_id).is_bot:
-                bot.logger.debug(
-                    f"[accid={accid}] QR scanned by contact id={event.contact_id}"
-                )
+                bot.logger.debug(f"[accid={accid}] QR scanned by contact id={event.contact_id}")
                 chatid = bot.rpc.create_chat_by_contact_id(accid, event.contact_id)
                 admin_chatid = cli.get_admin_chat(bot.rpc, accid)
                 send_app(bot, accid, admin_chatid, chatid)

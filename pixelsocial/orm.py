@@ -39,9 +39,7 @@ class Post(Base):
     filename = Column(String)
     style = Column(Integer)
     likes = relationship("Like", backref="post", cascade="all, delete, delete-orphan")
-    replies = relationship(
-        "Reply", backref="post", cascade="all, delete, delete-orphan"
-    )
+    replies = relationship("Reply", backref="post", cascade="all, delete, delete-orphan")
 
 
 class Like(Base):
