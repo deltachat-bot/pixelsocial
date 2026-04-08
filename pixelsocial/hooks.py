@@ -148,6 +148,9 @@ def _stop(bot: Bot, accid: int, event: NewMsgEvent) -> None:
     text = "Done, you logged out. To log in again send: /start"
     bot.rpc.send_msg(accid, chatid, MsgData(text=text))
 
+    if chatid != cli.get_admin_chat(bot.rpc, accid):
+        bot.rpc.delete_chat(accid, chatid)
+
 
 @cli.on(events.NewMessage(command="/stats"))
 def _stats(bot: Bot, accid: int, event: NewMsgEvent) -> None:

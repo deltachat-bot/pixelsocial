@@ -130,11 +130,13 @@ def logout_inactive_users(bot: Bot) -> None:
     count = 0
     try:
         for accid in bot.rpc.get_all_account_ids():
+            admin_chat = cli.get_admin_chat(bot.rpc, accid)
             chats = bot.rpc.get_chatlist_entries(accid, None, None, None)
             for chatid in chats:
                 chat = bot.rpc.get_basic_chat_info(accid, chatid)
                 if chat.chat_type != ChatType.SINGLE:
-                    bot.rpc.delete_chat(accid, chatid)
+                    if chatid != admin_chat:
+                        bot.rpc.delete_chat(accid, chatid)
                     continue
                 contacts = bot.rpc.get_chat_contacts(accid, chatid)
                 contact = bot.rpc.get_contact(accid, contacts[0])
@@ -144,7 +146,7 @@ def logout_inactive_users(bot: Bot) -> None:
                     accid, chatid, MessageViewtype.WEBXDC, None, None
                 )
                 has_app = False
-                for msgid in msgids:
+                for msgid in reversed(msgids):
                     msg = bot.rpc.get_message(accid, msgid)
                     if msg.from_id == SpecialContactId.SELF:
                         bot.rpc.delete_messages_for_all(accid, [msgid])
@@ -156,8 +158,8 @@ def logout_inactive_users(bot: Bot) -> None:
                     )
                     bot.rpc.send_msg(accid, chatid, MsgData(text=text))
                     count += 1
-                else:
-                    bot.rpc.delete_chat(accid, chatid)
+
+                bot.rpc.delete_chat(accid, chatid)
     except Exception as err:
         bot.logger.exception(err)
     bot.logger.info(f"[CLEANER] Inactive users logged out: {count}")
