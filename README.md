@@ -17,7 +17,7 @@ pip install pixelsocial
 To configure the bot:
 
 ```sh
-pixelsocial init bot@example.org SuperHardPassword
+pixelsocial init dcaccount:nine.testrun.org
 ```
 
 **(Optional)** To customize the bot name, avatar and status/signature:
